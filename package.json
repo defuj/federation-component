@@ -1,0 +1,17 @@
+{
+  "name": "federation-component",
+  "private": true,
+  "scripts": {
+    "dev:host": "pnpm --filter host dev",
+    "dev:greeting": "pnpm --filter greeting-module dev",
+    "dev:counter": "pnpm --filter counter-module dev",
+    "dev:all": "pnpm -r --parallel dev",
+    "build": "pnpm -r build",
+    "build:all": "./build-all.sh",
+    "start": "./start-all.sh"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3"
+  }
+}

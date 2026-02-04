@@ -1,0 +1,39 @@
+// https://nuxt.com/docs/api/configuration/nuxt-config
+export default defineNuxtConfig({
+  compatibilityDate: '2024-11-01',
+  devtools: { enabled: true },
+  future: {
+    compatibilityVersion: 4,
+  },
+
+  vite: {
+    build: {
+      target: 'esnext'
+    }
+  },
+
+  ssr: false,
+
+  hooks: {
+    'vite:extendConfig': (viteInlineConfig, { isClient, isServer }) => {
+      const { federation } = require('@module-federation/vite')
+
+      viteInlineConfig.plugins = viteInlineConfig.plugins || []
+      viteInlineConfig.plugins.push(
+        federation({
+          name: 'host',
+          remotes: {
+            greeting: 'greeting@http://localhost:3001/remoteEntry.js',
+            counter: 'counter@http://localhost:3002/remoteEntry.js',
+          },
+          shared: {
+            vue: {
+              requiredVersion: '^3.1.0',
+              singleton: true,
+            },
+          },
+        })
+      )
+    }
+  }
+})

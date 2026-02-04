@@ -1,0 +1,4 @@
+packages:
+  - 'host'
+  - 'greeting-module'
+  - 'counter-module'
