@@ -8,6 +8,8 @@ export default defineNuxtConfig({
 
   ssr: false,
 
+  srcDir: 'app',
+
   vite: {
     build: {
       target: 'esnext'
@@ -24,7 +26,7 @@ export default defineNuxtConfig({
           name: 'greeting',
           filename: 'remoteEntry.js',
           exposes: {
-            './Greeting': './components/Greeting.vue',
+            './Greeting': './app/components/Greeting.vue',
           },
           shared: {
             vue: {

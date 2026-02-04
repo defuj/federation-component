@@ -8,6 +8,8 @@ export default defineNuxtConfig({
 
   ssr: false,
 
+  srcDir: 'app',
+
   vite: {
     build: {
       target: 'esnext'
@@ -24,7 +26,7 @@ export default defineNuxtConfig({
           name: 'counter',
           filename: 'remoteEntry.js',
           exposes: {
-            './Counter': './components/Counter.vue',
+            './Counter': './app/components/Counter.vue',
           },
           shared: {
             vue: {

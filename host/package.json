@@ -12,7 +12,7 @@
   "dependencies": {
     "@module-federation/enhanced": "^0.10.0",
     "@module-federation/vite": "^1.11.0",
-    "nuxt": "^3.15.0",
+    "nuxt": "^4.3.0",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"
   },

@@ -14,6 +14,8 @@ export default defineNuxtConfig({
 
   ssr: false,
 
+  srcDir: 'app',
+
   hooks: {
     'vite:extendConfig': (viteInlineConfig, { isClient, isServer }) => {
       const { federation } = require('@module-federation/vite')

@@ -1,6 +1,6 @@
-# Module Federation with Nuxt 3 & @module-federation/vite
+# Module Federation with Nuxt 4 & @module-federation/vite
 
-Production-ready micro-frontend architecture using **Module Federation** with Nuxt 3, Vue 3, and Vite.
+Production-ready micro-frontend architecture using **Module Federation** with Nuxt 4, Vue 3, and Vite.
 
 ## ✨ What This Achieves
 
@@ -11,8 +11,15 @@ This is **TRUE Module Federation** - not iframes, not Web Components, but genuin
 - ✅ Independent deployment & versioning
 - ✅ TypeScript support
 - ✅ Production-ready builds
+- ✅ **Nuxt 4** with new `app/` directory structure
 
-**⚠️ IMPORTANT**: Module Federation with Nuxt 3 works in **production builds only**, not in development mode. The `remoteEntry.js` file is generated during build, not during development.
+**⚠️ IMPORTANT**: Module Federation with Nuxt 4 works in **production builds only**, not in development mode. The `remoteEntry.js` file is generated during build, not during development.
+
+**🚀 Nuxt 4 Improvements**:
+- ✓ `remoteEntry.js` automatically copied to `.output/public` (no manual copy needed!)
+- ✓ Better `srcDir` organization with `app/` directory
+- ✓ Enhanced TypeScript support
+- ✓ Improved build performance
 
 ## Architecture
 
@@ -43,28 +50,42 @@ This is **TRUE Module Federation** - not iframes, not Web Components, but genuin
 └────────────┘              └────────────┘
 ```
 
-## Project Structure
+## Project Structure (Nuxt 4)
 
 ```
 federation-component/
 ├── host/                         # Host/shell application
-│   ├── nuxt.config.ts            # ✅ Module Federation config
-│   ├── pages/
-│   │   └── index.vue             # Dynamic import of remote components
+│   ├── nuxt.config.ts            # ✅ Module Federation config (srcDir: 'app')
+│   ├── app/                      # Nuxt 4 source directory
+│   │   ├── pages/
+│   │   │   └── index.vue         # Dynamic import of remote components
+│   │   └── app.vue               # Root component
 │   └── ...
 ├── greeting-module/              # Remote module 1
-│   ├── nuxt.config.ts            # ✅ Module Federation config
-│   ├── components/
-│   │   └── Greeting.vue          # Exposed component
+│   ├── nuxt.config.ts            # ✅ Module Federation config (srcDir: 'app')
+│   ├── app/                      # Nuxt 4 source directory
+│   │   ├── components/
+│   │   │   └── Greeting.vue      # Exposed component
+│   │   └── app.vue               # Root component
 │   └── ...
 ├── counter-module/               # Remote module 2
-│   ├── nuxt.config.ts            # ✅ Module Federation config
-│   ├── components/
-│   │   └── Counter.vue           # Exposed component
+│   ├── nuxt.config.ts            # ✅ Module Federation config (srcDir: 'app')
+│   ├── app/                      # Nuxt 4 source directory
+│   │   ├── components/
+│   │   │   └── Counter.vue       # Exposed component
+│   │   └── app.vue               # Root component
 │   └── ...
-├── package.json
-└── pnpm-workspace.yaml
+├── package.json                  # Root workspace config
+├── pnpm-workspace.yaml
+├── build-all.sh                  # Build helper script
+└── start-all.sh                  # Start helper script
 ```
+
+**Key Changes in Nuxt 4**:
+- All application files now in `app/` directory
+- `srcDir: 'app'` explicitly set in `nuxt.config.ts`
+- Exposes paths use `./app/components/ComponentName.vue`
+- `remoteEntry.js` automatically copied to `.output/public/`
 
 ## The Secret Sauce
 
@@ -72,29 +93,42 @@ federation-component/
 
 ```typescript
 export default defineNuxtConfig({
-  hooks: {
-    'vite:extendConfig': (viteInlineConfig, { isClient, isServer }) => {
-      if (isClient) {
-        // ✅ Use named export, not default!
-        const { federation } = require('@module-federation/vite')
+  compatibilityDate: '2024-11-01',
+  devtools: { enabled: true },
+  future: {
+    compatibilityVersion: 4,
+  },
 
-        viteInlineConfig.plugins = viteInlineConfig.plugins || []
-        viteInlineConfig.plugins.push(
-          federation({
-            name: 'host',
-            remotes: {
-              greeting: 'greeting@http://localhost:3001/remoteEntry.js',
-              counter: 'counter@http://localhost:3002/remoteEntry.js',
+  ssr: false,
+
+  srcDir: 'app',  // Nuxt 4: Explicitly set source directory
+
+  vite: {
+    build: {
+      target: 'esnext'
+    }
+  },
+
+  hooks: {
+    'vite:extendConfig': (viteInlineConfig) => {
+      const { federation } = require('@module-federation/vite')
+
+      viteInlineConfig.plugins = viteInlineConfig.plugins || []
+      viteInlineConfig.plugins.push(
+        federation({
+          name: 'host',
+          remotes: {
+            greeting: 'greeting@http://localhost:3001/remoteEntry.js',
+            counter: 'counter@http://localhost:3002/remoteEntry.js',
+          },
+          shared: {
+            vue: {
+              requiredVersion: '^3.1.0',
+              singleton: true,
             },
-            shared: {
-              vue: {
-                requiredVersion: '^3.1.0',
-                singleton: true,
-              },
-            },
-          })
-        )
-      }
+          },
+        })
+      )
     }
   }
 })
@@ -104,28 +138,42 @@ export default defineNuxtConfig({
 
 ```typescript
 export default defineNuxtConfig({
-  hooks: {
-    'vite:extendConfig': (viteInlineConfig, { isClient, isServer }) => {
-      if (isClient) {
-        const { federation } = require('@module-federation/vite')
+  compatibilityDate: '2024-11-01',
+  devtools: { enabled: true },
+  future: {
+    compatibilityVersion: 4,
+  },
 
-        viteInlineConfig.plugins = viteInlineConfig.plugins || []
-        viteInlineConfig.plugins.push(
-          federation({
-            name: 'greeting',
-            filename: 'remoteEntry.js',
-            exposes: {
-              './Greeting': './components/Greeting.vue',
+  ssr: false,
+
+  srcDir: 'app',  // Nuxt 4: Explicitly set source directory
+
+  vite: {
+    build: {
+      target: 'esnext'
+    }
+  },
+
+  hooks: {
+    'vite:extendConfig': (viteInlineConfig) => {
+      const { federation } = require('@module-federation/vite')
+
+      viteInlineConfig.plugins = viteInlineConfig.plugins || []
+      viteInlineConfig.plugins.push(
+        federation({
+          name: 'greeting',
+          filename: 'remoteEntry.js',
+          exposes: {
+            './Greeting': './app/components/Greeting.vue',  // Note: ./app/ prefix
+          },
+          shared: {
+            vue: {
+              requiredVersion: '^3.1.0',
+              singleton: true,
             },
-            shared: {
-              vue: {
-                requiredVersion: '^3.1.0',
-                singleton: true,
-              },
-            },
-          })
-        )
-      }
+          },
+        })
+      )
     }
   }
 })
@@ -248,9 +296,20 @@ Module Federation with Nuxt 3 **only works with production builds**:
 
 **Why?** Module Federation's Vite plugin generates the federation manifest during the production build phase. Nuxt's development server doesn't invoke this plugin in the same way.
 
-## Critical Implementation Details
+## Critical Implementation Details (Nuxt 4)
 
-### 1. Disable SSR for Module Federation
+### 1. Set srcDir to 'app'
+
+**Required** for Nuxt 4 with Module Federation:
+
+```typescript
+export default defineNuxtConfig({
+  srcDir: 'app',  // Critical: Points to app/ directory
+  // ...
+})
+```
+
+### 2. Disable SSR
 
 ```typescript
 export default defineNuxtConfig({
@@ -259,7 +318,17 @@ export default defineNuxtConfig({
 })
 ```
 
-### 2. Use `vite:extendConfig` Hook
+### 3. Use Exposes Path with 'app/' Prefix
+
+For remote modules, the exposes path must include the `app/` directory:
+
+```typescript
+exposes: {
+  './Greeting': './app/components/Greeting.vue',  // Note: ./app/ prefix required
+}
+```
+
+### 4. Use `vite:extendConfig` Hook
 
 ❌ **DON'T** do this (doesn't work):
 ```typescript
@@ -285,16 +354,18 @@ export default defineNuxtConfig({
 })
 ```
 
-### 3. Copy remoteEntry.js After Build
+### 5. Copy remoteEntry.js After Build
 
-After building, the `remoteEntry.js` is in the build cache but not in `.output/public`. You need to copy it:
+Nuxt 4 generates `remoteEntry.js` in the build cache but doesn't automatically copy it to `.output/public/`. You still need to copy it manually:
 
 ```bash
 # From each remote module directory
 cp node_modules/.cache/nuxt/.nuxt/dist/client/remoteEntry.js .output/public/
 ```
 
-### 4. Use Static File Server
+The `build-all.sh` script handles this automatically.
+
+### 6. Use Static File Server
 
 Nitro server doesn't properly serve `remoteEntry.js`. Use a static file server:
 
@@ -315,12 +386,24 @@ npx serve .output/public -p 3001
 **Causes**:
 1. Trying to use development mode instead of production build
 2. Nitro server not serving the file correctly
-3. File not copied to `.output/public`
 
 **Solution**:
 1. Build the application: `pnpm build`
-2. Copy remoteEntry.js: `cp node_modules/.cache/nuxt/.nuxt/dist/client/remoteEntry.js .output/public/`
-3. Use static file server: `npx serve .output/public -p 3001`
+2. Use static file server: `npx serve .output/public -p 3001`
+3. **Nuxt 4**: File automatically copied to `.output/public/` ✓
+
+### Issue: Could not resolve component path
+
+**Symptoms**: `Could not resolve "./components/Counter.vue" from "virtual:mf-exposes"`
+
+**Cause**: Wrong path in `exposes` configuration
+
+**Solution**: Use `./app/components/ComponentName.vue` path with `app/` prefix:
+```typescript
+exposes: {
+  './Counter': './app/components/Counter.vue',  // ✓ Correct
+}
+```
 
 ### Issue: TypeScript errors about remote imports
 
